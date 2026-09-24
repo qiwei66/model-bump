@@ -1,6 +1,7 @@
-// Mock Claude Opus 5.5 responses: every response starts with a thinking block,
-// exactly like the real model, so code that reads content[0].text breaks here
-// the same way it will break in production.
+// Mock Claude Opus 5.5 responses. The real model's responses *can* start with
+// thinking blocks (thinking is always on); the mock always puts one first, so
+// code that reads content[0].text fails here every time instead of only
+// sometimes in production.
 
 import crypto from 'node:crypto';
 

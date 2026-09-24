@@ -19,8 +19,8 @@
 <text x="22" y="319" xml:space="preserve"><tspan fill="#e6edf3">          </tspan><tspan fill="#e6edf3">prompt when the tool applies.</tspan></text>
 <text x="22" y="339" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#forced-tool-use</tspan></text>
 <text x="22" y="359" xml:space="preserve"></text>
-<text x="22" y="379" xml:space="preserve"><tspan fill="#ff7b72" font-weight="700">✖ error</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Reads content[0] as text — Opus 5.5 responses start with a thinking block, so this is empty/undefined</tspan></text>
-<text x="22" y="399" xml:space="preserve"><tspan fill="#e6edf3" font-weight="700">      </tspan><tspan fill="#e6edf3" font-weight="700">or throws</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[content-by-position]</tspan></text>
+<text x="22" y="379" xml:space="preserve"><tspan fill="#ff7b72" font-weight="700">✖ error</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Reads content[0] as text — Opus 5.5 responses can start with a thinking block, and then this is</tspan></text>
+<text x="22" y="399" xml:space="preserve"><tspan fill="#e6edf3" font-weight="700">      </tspan><tspan fill="#e6edf3" font-weight="700">empty/undefined or throws</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[content-by-position]</tspan></text>
 <text x="22" y="419" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:25</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">return resp.content[0].text</tspan></text>
 <text x="22" y="439" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Select blocks by type: next(b.text for b in resp.content if b.type == "text")  /  resp.content.find(b</tspan></text>
 <text x="22" y="459" xml:space="preserve"><tspan fill="#e6edf3">          </tspan><tspan fill="#e6edf3">=&gt; b.type === "text")</tspan></text>
@@ -39,7 +39,7 @@
 <text x="22" y="719" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Remove them (including on wrappers like ChatAnthropic(temperature=0)). Steer with the prompt instead.</tspan></text>
 <text x="22" y="739" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#request-requirements</tspan></text>
 <text x="22" y="759" xml:space="preserve"></text>
-<text x="22" y="779" xml:space="preserve"><tspan fill="#e3b341" font-weight="700">▲ warn </tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Reads a tool_use block by position — a thinking block comes first on Opus 5.5</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[content-by-position]</tspan></text>
+<text x="22" y="779" xml:space="preserve"><tspan fill="#e3b341" font-weight="700">▲ warn </tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Reads a tool_use block by position — on Opus 5.5 a thinking block can come first</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[content-by-position]</tspan></text>
 <text x="22" y="799" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:16</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">return resp.content[0].input["category"]</tspan></text>
 <text x="22" y="819" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Find the block with type == "tool_use" instead of indexing content[0].</tspan></text>
 <text x="22" y="839" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#thinking-in-every-response</tspan></text>

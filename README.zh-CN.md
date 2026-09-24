@@ -30,7 +30,7 @@ npx github:qiwei66/model-bump probe -- python app.py
 |---|---|
 | thinking 无法关闭 | `thinking: {type: "disabled"}` → **400**，`budget_tokens` → **400** |
 | 不再支持强制调用工具 | `tool_choice: {type: "any" \| "tool"}` → **400** |
-| 响应的第一个块是 `thinking` | `response.content[0].text` → **报错，或者拿到空字符串** |
+| 响应的第一个块可能是 `thinking` | 一旦是，`response.content[0].text` → **报错，或者拿到空字符串** |
 | thinking 块和对话绑定 | 工具调用循环里把 thinking 块过滤掉 → **400** |
 | 采样参数被移除 | `temperature=0` → **400** |
 | effort 默认值变了 | 从 `high` 变成 `medium`，同名档位对应的思考预算也不一样 |
@@ -40,11 +40,13 @@ npx github:qiwei66/model-bump probe -- python app.py
 
 | 技术栈（2026-09-24 实测） | 在 `claude-opus-5-5` 上的表现 |
 |---|---|
-| `anthropic` Python 1.8.0 | `resp.content[0].text` → `AttributeError: 'ThinkingBlock' object has no attribute 'text'` |
+| `anthropic` Python 1.8.0 | 响应以 thinking 开头时，`resp.content[0].text` → `AttributeError: 'ThinkingBlock' object has no attribute 'text'` |
 | `langchain-anthropic` **1.7.3 和 1.7.4** | `bind_tools(tool_choice="any")`、`thinking={"type":"disabled"}`、`temperature=0` 都被原样发出 → **400**。`with_structured_output()` 不再强制调用工具，模型一旦用文本回答就抛 `OutputParserException` |
 | `litellm` 1.102.1 | 强制 `tool_choice` 或设置 `temperature` → `UnsupportedParamsError`。开了 `drop_params=True` 后，强制调用会被**悄悄降级成 `auto`**。`response_format` 走的是已弃用的 `output_format` |
 | `ai` 7.0.113 + `@ai-sdk/anthropic` 4.0.62 | `toolChoice: "required"` 被降级成 `auto` 并给出警告；模型没调用工具时抛 `ToolChoiceViolationError` |
 | 手写的工具调用循环（任何 SDK） | 回传工具结果前执行 `content.filter(b => b.type !== "thinking")` → **400** |
+
+表格里的请求内容都是从真实的库里抓取的；其中的 **400** 是[迁移文档](https://platform.claude.com/docs/en/models/opus-5-5/migration-guide)对这类请求给出的结果，并不是真实 API 的返回。详见[验证方式与局限](#验证方式与局限)。
 
 ## 我们扫描了 39 个热门 AI 开源项目
 
@@ -77,7 +79,7 @@ npx github:qiwei66/model-bump probe --serve        # 然后自己设置 ANTHROPI
 <img src="docs/probe.svg" alt="model-bump probe output" width="820">
 
 - **拒绝**所有 Opus 5.5 会拒绝的请求，返回同样格式的 400（文档里给出了原文的报错会一字不差），这样你的错误处理也能真正跑一遍。
-- 其余请求按 Opus 5.5 的方式**回答**：先给一个 `thinking` 块，再给文本，也支持流式输出（SSE）。读取 `content[0].text` 的代码在这里会像在生产环境一样报错。
+- 其余请求按 Opus 5.5 的响应格式**回答**：文本之前带一个 `thinking` 块，也支持流式输出（SSE）。真实模型的响应**可能**以 thinking 块开头，而 mock **每次都**这样，所以读取 `content[0].text` 的代码在这里每次都会出错，而不是像生产环境那样只是偶尔出错。
 - 加上 `--simulate-tools`，模拟响应会调用你的第一个工具，然后检查你的循环有没有把 `thinking` 块原样传回去。
 - 会自动为子进程设置 `ANTHROPIC_BASE_URL`（官方 SDK、Vercel AI SDK、Agent SDK）、`ANTHROPIC_API_URL`（LangChain）、`ANTHROPIC_API_BASE`（LiteLLM），并填一个假的 API Key，完全用不到你的真 Key。
 - `--lenient` 模式下违规请求也返回 200，一次运行就能找出所有问题。`--dump dir/` 会把抓到的请求保存下来。
@@ -103,6 +105,24 @@ jobs:
 ```
 
 发现的问题会以行内注释的形式显示在 PR 的代码 diff 上。
+
+## 验证方式与局限
+
+对待这个工具，请像对待任何迁移建议一样保持怀疑。
+
+**已验证**
+
+- 每条规则都来自[官方迁移文档](https://platform.claude.com/docs/en/models/opus-5-5/migration-guide)，并链接到对应章节。文档里给出了报错原文的，`probe` 一字不差地返回；其他报错信息在报告里标注为 *paraphrased*。
+- 上面的框架表格：我们安装了每个库，接到 `probe` 上实际运行，表里的请求内容就是这些版本真实发出的。
+- 27 个单元测试，在 CI 的 Node 18、20、22 上运行。调查结果经过人工抽查，并据此修正了几类误报。
+
+**未验证**
+
+- **model-bump 没有请求过真实的 Opus 5.5 API**，它是按文档规则检查请求的。如果 API 的实际行为和文档不一致，以 API 为准；遇到这种情况欢迎[提 issue](https://github.com/qiwei66/model-bump/issues)。
+- `check` 基于模式匹配，不是完整的语法分析。它无法判断某段代码最终会调用哪个模型，所以命中的意思是"**如果**这段代码运行在 Opus 5.5 上就会出错"。已经按模型区分参数的多模型路由项目，会出现实际上永远不会触发的命中。
+- 真实 Opus 5.5 的响应**可能**以 thinking 块开头，但不是每次都会。`probe` 的模拟响应每次都这样做，是为了让问题每次都能暴露出来。
+- "已知有问题的依赖版本表"是手工维护的，框架发布修复后会过时。
+- `probe` 只能抓到会读取 `ANTHROPIC_BASE_URL`（或 LangChain、LiteLLM 对应变量）的客户端，不覆盖 Bedrock、Vertex、Foundry 的请求格式。
 
 ## 常见问题
 

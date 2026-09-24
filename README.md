@@ -30,7 +30,7 @@ npx github:qiwei66/model-bump probe -- python app.py
 |---|---|
 | Thinking is always on | `thinking: {type: "disabled"}` → **400**. `budget_tokens` → **400** |
 | No forced tool use | `tool_choice: {type: "any" \| "tool"}` → **400** |
-| Responses start with a `thinking` block | `response.content[0].text` → **crash / empty string** |
+| Responses can start with a `thinking` block | `response.content[0].text` → **AttributeError / empty string** whenever they do |
 | Thinking blocks are bound to the conversation | a tool loop that filters them out of the assistant turn → **400** |
 | Sampling params are gone | `temperature=0` → **400** |
 | Effort default changed | `high` → `medium`. Same level name, different thinking budget |
@@ -40,11 +40,13 @@ Most of these don't live in *your* code. They live in the framework between you 
 
 | Stack (tested 2026-09-24) | What happens on `claude-opus-5-5` |
 |---|---|
-| `anthropic` Python 1.8.0 | `resp.content[0].text` → `AttributeError: 'ThinkingBlock' object has no attribute 'text'` |
+| `anthropic` Python 1.8.0 | `resp.content[0].text` on a thinking-first response → `AttributeError: 'ThinkingBlock' object has no attribute 'text'` |
 | `langchain-anthropic` **1.7.3 and 1.7.4** | `bind_tools(tool_choice="any")`, `thinking={"type":"disabled"}`, `temperature=0` are sent as-is → **400**. `with_structured_output()` no longer forces the tool → `OutputParserException` whenever the model answers in text |
 | `litellm` 1.102.1 | forced `tool_choice` / `temperature` → `UnsupportedParamsError`. With `drop_params=True` the forced choice **silently becomes `auto`**. `response_format` is sent as the deprecated `output_format` |
 | `ai` 7.0.113 + `@ai-sdk/anthropic` 4.0.62 | `toolChoice: "required"` is downgraded to `auto` with a warning, then `ToolChoiceViolationError` when the model doesn't call a tool |
 | Hand-rolled tool loops (any SDK) | `content.filter(b => b.type !== "thinking")` before sending tool results → **400** |
+
+The payloads in this table were captured from the real libraries. The **400**s are what the [migration guide](https://platform.claude.com/docs/en/models/opus-5-5/migration-guide) documents for those payloads, not responses from the live API. See [How it's verified](#how-its-verified-and-what-it-cant-do).
 
 ## We scanned 39 popular open-source AI repos
 
@@ -79,7 +81,7 @@ npx github:qiwei66/model-bump probe --serve        # then set ANTHROPIC_BASE_URL
 `probe` starts a local server that speaks the Messages API and behaves like `claude-opus-5-5`:
 
 - It **rejects** what Opus 5.5 rejects, with the same 400 error shape (and the documented error text where the docs give it), so your error handling is exercised for real.
-- It **answers** everything else like Opus 5.5 does: a `thinking` block first, then text. Streaming (SSE) included. Code that reads `content[0].text` breaks here the way it will in production.
+- It **answers** everything else in Opus 5.5's response shape, with a `thinking` block before the text, streaming (SSE) included. The real model *can* start with a thinking block; the mock *always* does, so code that reads `content[0].text` fails every time here instead of only sometimes in production.
 - `--simulate-tools` makes the mock call your first tool, then checks that your loop sends the `thinking` block back unmodified.
 - It sets `ANTHROPIC_BASE_URL` (official SDKs, Vercel AI SDK, Agent SDK), `ANTHROPIC_API_URL` (LangChain) and `ANTHROPIC_API_BASE` (LiteLLM) for the child process, plus a dummy API key. Your real key is never needed.
 - `--lenient` answers violations with 200, so one run finds every issue. `--dump dir/` saves the captured payloads.
@@ -125,6 +127,24 @@ Run `npx github:qiwei66/model-bump rules` for the full list. Every rule links to
 | `silent-structured-output` | warn (probe) | synthetic JSON tool sent without a forced choice |
 | `stream-first-block` | warn | stream handlers that special-case block index 0 |
 | `obsolete-beta`, `output-format-deprecated`, `refusal-unhandled` | info | cleanup |
+
+## How it's verified (and what it can't do)
+
+Be as skeptical of this tool as you'd be of any migration advice.
+
+**Verified**
+
+- Every rule comes from the [official migration guide](https://platform.claude.com/docs/en/models/opus-5-5/migration-guide) and links back to its section. Where the guide quotes an error message, `probe` returns it verbatim; everywhere else the report labels the message *paraphrased*.
+- The framework table above comes from installing each library and running it against `probe`. The request payloads are exactly what those versions send.
+- 27 unit tests, run in CI on Node 18, 20 and 22. The survey was spot-checked by hand, and several classes of false positives were fixed along the way.
+
+**Not verified**
+
+- **model-bump has not been run against the live Opus 5.5 API.** It checks requests against the documented rules. If the API and the docs disagree, the API wins. Please [open an issue](https://github.com/qiwei66/model-bump/issues) if you see one.
+- `check` is pattern-based, not a full parser. It can't tell which model a code path will call, so a match means "breaks *if* this runs against Opus 5.5". Multi-model routers that already gate parameters by model will show matches that never fire.
+- Real Opus 5.5 responses *can* start with a thinking block; they don't always. `probe`'s mock always does, to surface the bug every time.
+- The known-broken dependency table is maintained by hand and goes stale as frameworks ship fixes.
+- `probe` only sees clients that honor `ANTHROPIC_BASE_URL` (or LangChain's and LiteLLM's equivalents). It doesn't cover Bedrock, Vertex or Foundry request shapes.
 
 ## FAQ
 
