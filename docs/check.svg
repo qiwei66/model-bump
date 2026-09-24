@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="985" height="946" viewBox="0 0 985 946">
+<rect width="100%" height="100%" rx="10" fill="#0d1117"/>
+<rect width="100%" height="32" rx="10" fill="#161b22"/><rect y="22" width="100%" height="10" fill="#161b22"/>
+<circle cx="20" cy="16" r="6" fill="#ff5f57"/><circle cx="40" cy="16" r="6" fill="#febc2e"/><circle cx="60" cy="16" r="6" fill="#28c840"/>
+<g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14">
+<text x="22" y="59" xml:space="preserve"><tspan fill="#7ee787" font-weight="700">$ npx github:qiwei66/model-bump check .</tspan></text>
+<text x="22" y="79" xml:space="preserve"></text>
+<text x="22" y="99" xml:space="preserve"><tspan fill="#e6edf3" font-weight="700">model-bump</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">·</tspan><tspan fill="#e6edf3"> checking </tspan><tspan fill="#56d4dd">.</tspan><tspan fill="#e6edf3"> for </tspan><tspan fill="#e6edf3" font-weight="700">Claude Opus 5.5</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">(claude-opus-5-5)</tspan></text>
+<text x="22" y="119" xml:space="preserve"><tspan fill="#8b949e">  You don't reference claude-opus-5-5 yet — this is what breaks when you bump.</tspan></text>
+<text x="22" y="139" xml:space="preserve"></text>
+<text x="22" y="159" xml:space="preserve"><tspan fill="#ff7b72" font-weight="700">✖ error</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Disables thinking — Opus 5.5 rejects thinking: {type: "disabled"} (400)</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[thinking-disabled]</tspan></text>
+<text x="22" y="179" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:11</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">thinking={"type": "disabled"},</tspan></text>
+<text x="22" y="199" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Remove `thinking`; use output_config.effort "low" where you disabled it to save tokens.</tspan></text>
+<text x="22" y="219" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#thinking-cant-be-disabled</tspan></text>
+<text x="22" y="239" xml:space="preserve"></text>
+<text x="22" y="259" xml:space="preserve"><tspan fill="#ff7b72" font-weight="700">✖ error</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Forces a tool call — Opus 5.5 rejects tool_choice "any" / "tool" (400)</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[forced-tool-choice]</tspan></text>
+<text x="22" y="279" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:13</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">tool_choice={"type": "tool", "name": "category"},</tspan></text>
+<text x="22" y="299" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Use tool_choice "auto" + strict tool use, or structured outputs (output_config.format). Say in the</tspan></text>
+<text x="22" y="319" xml:space="preserve"><tspan fill="#e6edf3">          </tspan><tspan fill="#e6edf3">prompt when the tool applies.</tspan></text>
+<text x="22" y="339" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#forced-tool-use</tspan></text>
+<text x="22" y="359" xml:space="preserve"></text>
+<text x="22" y="379" xml:space="preserve"><tspan fill="#ff7b72" font-weight="700">✖ error</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Reads content[0] as text — Opus 5.5 responses start with a thinking block, so this is empty/undefined</tspan></text>
+<text x="22" y="399" xml:space="preserve"><tspan fill="#e6edf3" font-weight="700">      </tspan><tspan fill="#e6edf3" font-weight="700">or throws</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[content-by-position]</tspan></text>
+<text x="22" y="419" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:25</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">return resp.content[0].text</tspan></text>
+<text x="22" y="439" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Select blocks by type: next(b.text for b in resp.content if b.type == "text")  /  resp.content.find(b</tspan></text>
+<text x="22" y="459" xml:space="preserve"><tspan fill="#e6edf3">          </tspan><tspan fill="#e6edf3">=&gt; b.type === "text")</tspan></text>
+<text x="22" y="479" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#thinking-in-every-response</tspan></text>
+<text x="22" y="499" xml:space="preserve"></text>
+<text x="22" y="519" xml:space="preserve"><tspan fill="#ff7b72" font-weight="700">✖ error</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">langchain-anthropic 1.7.4: ChatAnthropic passes forced tool_choice, thinking {type: "disabled"} and</tspan></text>
+<text x="22" y="539" xml:space="preserve"><tspan fill="#e6edf3" font-weight="700">      </tspan><tspan fill="#e6edf3" font-weight="700">temperature through to Opus 5.5 → 400</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[dep:langchain-anthropic]</tspan></text>
+<text x="22" y="559" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">requirements.txt</tspan></text>
+<text x="22" y="579" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Until a fix ships: drop tool_choice="any"/name, thinking disabled and temperature for claude-opus-5-5;</tspan></text>
+<text x="22" y="599" xml:space="preserve"><tspan fill="#e6edf3">          </tspan><tspan fill="#e6edf3">use with_structured_output(..., method="json_schema").</tspan></text>
+<text x="22" y="619" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://github.com/langchain-ai/langchain/issues/40777</tspan></text>
+<text x="22" y="639" xml:space="preserve"></text>
+<text x="22" y="659" xml:space="preserve"><tspan fill="#e3b341" font-weight="700">▲ warn </tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Sets temperature / top_p / top_k — Opus 5.5 rejects non-default sampling parameters (400)</tspan><tspan fill="#e6edf3"> </tspan></text>
+<text x="22" y="679" xml:space="preserve"><tspan fill="#8b949e">      </tspan><tspan fill="#8b949e">[sampling-params]</tspan></text>
+<text x="22" y="699" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:10</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">temperature=0,</tspan></text>
+<text x="22" y="719" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Remove them (including on wrappers like ChatAnthropic(temperature=0)). Steer with the prompt instead.</tspan></text>
+<text x="22" y="739" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#request-requirements</tspan></text>
+<text x="22" y="759" xml:space="preserve"></text>
+<text x="22" y="779" xml:space="preserve"><tspan fill="#e3b341" font-weight="700">▲ warn </tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#e6edf3" font-weight="700">Reads a tool_use block by position — a thinking block comes first on Opus 5.5</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#8b949e">[content-by-position]</tspan></text>
+<text x="22" y="799" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#56d4dd">app.py:16</tspan><tspan fill="#e6edf3">  </tspan><tspan fill="#8b949e">return resp.content[0].input["category"]</tspan></text>
+<text x="22" y="819" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#7ee787">fix:</tspan><tspan fill="#e6edf3"> Find the block with type == "tool_use" instead of indexing content[0].</tspan></text>
+<text x="22" y="839" xml:space="preserve"><tspan fill="#e6edf3">    </tspan><tspan fill="#8b949e">docs: https://platform.claude.com/docs/en/models/opus-5-5/migration-guide#thinking-in-every-response</tspan></text>
+<text x="22" y="859" xml:space="preserve"></text>
+<text x="22" y="879" xml:space="preserve"><tspan fill="#e6edf3" font-weight="700">Summary:</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#ff7b72">4 errors</tspan><tspan fill="#e6edf3"> · </tspan><tspan fill="#e3b341">2 warnings</tspan><tspan fill="#e6edf3"> · </tspan><tspan fill="#79c0ff">0 info</tspan><tspan fill="#8b949e"> in 1 file, 1 manifest</tspan></text>
+<text x="22" y="899" xml:space="preserve"><tspan fill="#8b949e">Model IDs to bump: 2 (claude-opus-5 ×2)</tspan></text>
+<text x="22" y="919" xml:space="preserve"><tspan fill="#8b949e">Static checks can't see what your framework sends. Next: </tspan><tspan fill="#8b949e" font-weight="700">npx github:qiwei66/model-bump probe -- &lt;your command&gt;</tspan></text>
+</g>
+</svg>

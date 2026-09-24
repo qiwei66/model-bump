@@ -1,0 +1,36 @@
+{
+  "name": "model-bump",
+  "version": "0.1.0",
+  "description": "Will your code survive the model bump? Catch Claude Opus 5.5 breaking changes in your code, your dependencies, and the requests your framework actually sends. No API key needed.",
+  "type": "module",
+  "bin": {
+    "model-bump": "bin/model-bump.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude",
+    "anthropic",
+    "opus-5-5",
+    "claude-opus-5-5",
+    "migration",
+    "llm",
+    "langchain",
+    "litellm",
+    "vercel-ai-sdk",
+    "linter"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiwei66/model-bump.git"
+  },
+  "license": "MIT"
+}

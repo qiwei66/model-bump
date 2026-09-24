@@ -1,0 +1,21 @@
+name: 'model-bump'
+description: 'Fail the build before a Claude model bump breaks production. Checks code + dependencies for Claude Opus 5.5 breaking changes.'
+author: 'qiwei66'
+branding:
+  icon: 'alert-triangle'
+  color: 'orange'
+inputs:
+  path:
+    description: 'Directory to scan'
+    default: '.'
+  fail-on:
+    description: 'Fail on: error | warn | never'
+    default: 'error'
+  args:
+    description: 'Extra arguments for `model-bump check`'
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: node "${{ github.action_path }}/bin/model-bump.js" check "${{ inputs.path }}" --fail-on "${{ inputs.fail-on }}" ${{ inputs.args }}

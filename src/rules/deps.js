@@ -1,0 +1,81 @@
+// Known framework/gateway versions that break (or silently degrade) on
+// claude-opus-5-5. Keep this list source-backed: every entry links to the
+// upstream report. `affectedUpTo` is the newest version reported or verified
+// as affected; `fixedIn` is set once a release with the fix ships.
+//
+// PRs welcome — this table is the part of model-bump that goes stale fastest.
+
+export const DEP_RULES = [
+  {
+    ecosystem: 'pypi',
+    name: 'langchain-anthropic',
+    affectedUpTo: '1.7.4',
+    fixedIn: null,
+    severity: 'error',
+    title: 'ChatAnthropic passes forced tool_choice, thinking {type: "disabled"} and temperature through to Opus 5.5 → 400',
+    detail: 'Verified with model-bump probe on 1.7.3 and 1.7.4: bind_tools(tool_choice="any") and ChatAnthropic(thinking={"type": "disabled"}) / (temperature=0) are sent as-is. with_structured_output() drops the forced choice but then raises OutputParserException whenever the model answers in text. create_agent() with ToolStrategy is also reported.',
+    fix: 'Until a fix ships: drop tool_choice="any"/name, thinking disabled and temperature for claude-opus-5-5; use with_structured_output(..., method="json_schema").',
+    link: 'https://github.com/langchain-ai/langchain/issues/40777',
+    reported: '2026-09-23',
+  },
+  {
+    ecosystem: 'pypi',
+    name: 'langchain-aws',
+    affectedUpTo: '1.7.9',
+    fixedIn: null,
+    severity: 'error',
+    title: 'ChatBedrock / ChatBedrockConverse .with_structured_output() forces tool choice → 400 on Opus 5.5',
+    detail: 'Fix proposed in langchain-aws#1311 (forced_tool_choice_unsupported helper).',
+    fix: 'Upgrade to the release containing langchain-aws#1311.',
+    link: 'https://github.com/langchain-ai/langchain-aws/issues/1310',
+    reported: '2026-09-23',
+  },
+  {
+    ecosystem: 'pypi',
+    name: 'deepagents',
+    affectedUpTo: '0.7.18',
+    fixedIn: null,
+    severity: 'error',
+    title: 'RubricMiddleware grader picks forced-tool structured output (AutoStrategy) → 400 on Opus 5.5',
+    detail: 'Also affected through langchain-anthropic 1.7.3.',
+    fix: 'Upgrade deepagents once the grader override ships, or run the grader on a model that accepts forced tool use.',
+    link: 'https://github.com/langchain-ai/deepagents/issues/6509',
+    reported: '2026-09-23',
+  },
+  {
+    ecosystem: 'pypi',
+    name: 'litellm',
+    affectedUpTo: '1.102.1',
+    fixedIn: null,
+    severity: 'warn',
+    title: 'Silent downgrades: drop_params turns forced tool_choice into "auto"; Bedrock response_format can return plain text with HTTP 200',
+    detail: 'Verified with model-bump probe on 1.102.1 (Anthropic provider): tool_choice="required" and temperature raise UnsupportedParamsError locally; with drop_params=True the forced choice becomes "auto" and the call succeeds even if no tool is called. response_format is sent as the deprecated output_format. On Bedrock the synthetic json_tool_call can no longer be forced (litellm#42717).',
+    fix: 'Check tool_calls / parse structured output defensively when drop_params is on. Fix for Bedrock tracked in BerriAI/litellm#42718.',
+    link: 'https://github.com/BerriAI/litellm/issues/42717',
+    reported: '2026-09-23',
+  },
+  {
+    ecosystem: 'npm',
+    name: '@ai-sdk/amazon-bedrock',
+    affectedUpTo: '5.0.91',
+    fixedIn: null,
+    severity: 'error',
+    title: 'toolChoice "required" or a named tool maps to a forced tool call → 400 on Opus 5.5',
+    detail: 'amazon-bedrock-prepare-tools does not consult rejectsForcedToolUse (the @ai-sdk/anthropic provider does).',
+    fix: 'Use bedrockAnthropic() (already falls back to "auto"), or upgrade once vercel/ai#21364 ships.',
+    link: 'https://github.com/vercel/ai/issues/21364',
+    reported: '2026-09-23',
+  },
+  {
+    ecosystem: 'npm',
+    name: '@ai-sdk/anthropic',
+    affectedUpTo: null,
+    fixedIn: null,
+    severity: 'info',
+    title: 'Forced toolChoice is downgraded to "auto" with a warning on Opus 5.5',
+    detail: 'No 400, but the model is free not to call the tool. Check for the warning in `result.warnings`.',
+    fix: 'Say in the prompt when the tool must be used, or use structured outputs.',
+    link: 'https://github.com/vercel/ai/issues/21364',
+    reported: '2026-09-23',
+  },
+];

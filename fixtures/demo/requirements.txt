@@ -1,0 +1,2 @@
+anthropic==1.8.0
+langchain-anthropic==1.7.4
