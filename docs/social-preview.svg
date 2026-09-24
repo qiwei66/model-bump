@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <rect width="1280" height="640" fill="#0d1117"/>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">
+    <text x="80" y="130" font-size="68" font-weight="700" fill="#e6edf3">model-bump</text>
+    <text x="80" y="190" font-size="30" fill="#8b949e">Will your code survive the bump to Claude Opus 5.5?</text>
+    <rect x="80" y="235" width="1120" height="270" rx="14" fill="#161b22" stroke="#30363d"/>
+    <text x="115" y="298" font-size="27"><tspan fill="#ff7b72" font-weight="700">✖ </tspan><tspan fill="#e6edf3">resp.content[0].text        </tspan><tspan fill="#8b949e">→ crash (thinking block first)</tspan></text>
+    <text x="115" y="353" font-size="27"><tspan fill="#ff7b72" font-weight="700">✖ </tspan><tspan fill="#e6edf3">tool_choice={"type":"any"}  </tspan><tspan fill="#8b949e">→ 400</tspan></text>
+    <text x="115" y="408" font-size="27"><tspan fill="#ff7b72" font-weight="700">✖ </tspan><tspan fill="#e6edf3">langchain-anthropic 1.7.4   </tspan><tspan fill="#8b949e">→ 400 (sent as-is)</tspan></text>
+    <text x="115" y="463" font-size="27"><tspan fill="#e3b341" font-weight="700">▲ </tspan><tspan fill="#e6edf3">litellm drop_params         </tspan><tspan fill="#8b949e">→ tool call silently "auto"</tspan></text>
+    <text x="80" y="570" font-size="30" fill="#7ee787" font-weight="700">$ npx github:qiwei66/model-bump check .</text>
+    <text x="1200" y="570" font-size="24" fill="#8b949e" text-anchor="end">no API key</text>
+  </g>
+</svg>
