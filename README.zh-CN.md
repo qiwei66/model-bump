@@ -46,7 +46,14 @@ npx github:qiwei66/model-bump probe -- python app.py
 | `ai` 7.0.113 + `@ai-sdk/anthropic` 4.0.62 | `toolChoice: "required"` 被降级成 `auto` 并给出警告；模型没调用工具时抛 `ToolChoiceViolationError` |
 | 手写的工具调用循环（任何 SDK） | 回传工具结果前执行 `content.filter(b => b.type !== "thinking")` → **400** |
 
-<!-- SURVEY -->
+## 我们扫描了 39 个热门 AI 开源项目
+
+使用 `model-bump check --skip-tests`，扫描日期 2026-09-24。[完整表格及对应 commit →](docs/survey.md)
+
+- **11 个项目会从 Claude 响应里读取 `content[0].text`，共 125 处。** 其中 104 处在 Anthropic 官方的 cookbook、courses 和 quickstarts 里，大多数人的这种写法正是从这些地方学来的。
+- 22 个项目会发送 `budget_tokens`，7 个项目强制指定 `tool_choice`。它们大多是多模型路由，会按模型决定发送哪些参数，所以关键在于它们的模型能力表有没有收录 `claude-opus-5-5`。
+
+以上是**如果运行在** Opus 5.5 上就会失败的代码路径，并不代表这些项目现在已经坏了。
 
 ## `check`：静态扫描
 
@@ -66,6 +73,8 @@ npx github:qiwei66/model-bump probe -- python app.py
 npx github:qiwei66/model-bump probe -- npm test
 npx github:qiwei66/model-bump probe --serve        # 然后自己设置 ANTHROPIC_BASE_URL
 ```
+
+<img src="docs/probe.svg" alt="model-bump probe output" width="820">
 
 - **拒绝**所有 Opus 5.5 会拒绝的请求，返回同样格式的 400（文档里给出了原文的报错会一字不差），这样你的错误处理也能真正跑一遍。
 - 其余请求按 Opus 5.5 的方式**回答**：先给一个 `thinking` 块，再给文本，也支持流式输出（SSE）。读取 `content[0].text` 的代码在这里会像在生产环境一样报错。

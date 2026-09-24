@@ -46,7 +46,14 @@ Most of these don't live in *your* code. They live in the framework between you 
 | `ai` 7.0.113 + `@ai-sdk/anthropic` 4.0.62 | `toolChoice: "required"` is downgraded to `auto` with a warning, then `ToolChoiceViolationError` when the model doesn't call a tool |
 | Hand-rolled tool loops (any SDK) | `content.filter(b => b.type !== "thinking")` before sending tool results → **400** |
 
-<!-- SURVEY -->
+## We scanned 39 popular open-source AI repos
+
+`model-bump check --skip-tests`, 2026-09-24. [Full table with commits →](docs/survey.md)
+
+- **11 repos read `content[0].text` from a Claude response: 125 call sites.** 104 of them are in Anthropic's own cookbook, courses and quickstarts, which is where most of us copied the pattern from.
+- 22 repos send `budget_tokens` somewhere and 7 force a `tool_choice`. Most of these are multi-model routers that gate parameters by model, so what matters is whether their model tables already know about `claude-opus-5-5`.
+
+These are call sites that fail *if they run against* Opus 5.5. It doesn't mean any of these projects is broken today.
 
 ## `check`: static scan
 
@@ -66,6 +73,8 @@ npx github:qiwei66/model-bump probe -- python app.py
 npx github:qiwei66/model-bump probe -- npm test
 npx github:qiwei66/model-bump probe --serve        # then set ANTHROPIC_BASE_URL yourself
 ```
+
+<img src="docs/probe.svg" alt="model-bump probe output" width="820">
 
 `probe` starts a local server that speaks the Messages API and behaves like `claude-opus-5-5`:
 
